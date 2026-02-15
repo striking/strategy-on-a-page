@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import OpenAI from "openai";
+import Anthropic from "@anthropic-ai/sdk";
 
 /* ── Rate limiter (in-memory, per cold-start) ────────────────────────── */
 const hits = new Map<string, { count: number; resetAt: number }>();
@@ -16,8 +16,8 @@ function isRateLimited(ip: string): boolean {
   return entry.count > LIMIT;
 }
 
-/* ── OpenAI client ───────────────────────────────────────────────────── */
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+/* ── Anthropic client ────────────────────────────────────────────────── */
+const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 /* ── Handler ─────────────────────────────────────────────────────────── */
 export async function POST(req: NextRequest) {
@@ -113,17 +113,16 @@ Industry: ${industry || "Not specified"}
 Background: ${businessBackground || "Not provided"}`;
 
   try {
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o",
+    const message = await anthropic.messages.create({
+      model: "claude-opus-4-6-20250619",
+      max_tokens: 3000,
+      system: systemPrompt,
       messages: [
-        { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
       ],
-      temperature: 0.7,
-      max_tokens: 2000,
     });
 
-    const raw = completion.choices[0]?.message?.content ?? "";
+    const raw = message.content[0]?.type === "text" ? message.content[0].text : "";
     const cleaned = raw
       .replace(/^```(?:json)?\s*\n?/i, "")
       .replace(/\n?```\s*$/i, "")
