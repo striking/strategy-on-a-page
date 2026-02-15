@@ -136,6 +136,10 @@ export default function Home() {
           <ContextStep
             strategy={state.strategy}
             onUpdate={updateStrategy}
+            onAiDraft={(data) => {
+              updateStrategy(data);
+              dispatch({ type: 'SET_STEP', step: 7 });
+            }}
           />
         );
       case 3:
