@@ -114,7 +114,7 @@ Background: ${businessBackground || "Not provided"}`;
 
   try {
     const message = await anthropic.messages.create({
-      model: "claude-opus-4-6-20250619",
+      model: "claude-opus-4-20250514",
       max_tokens: 3000,
       system: systemPrompt,
       messages: [
